@@ -1,0 +1,54 @@
+There is a max of 6 seconds with each tick being .25s.
+That means there is only 24 possible moves that the AI can make.
+
+----------------
+Each tick (.25s) 
+
+Move left = 1/10
+Move right = 1/10
+Dash left = 1/10
+Dash left-up = 1/10
+Dash up = 1/10
+Dash right-up = 1/10
+Dash right = 1/10
+Dash right-down = 1/10
+Dash down = 1/10
+Dash left-down = 1/10
+-----------------
+
+In the SQL Database, make it so that there is a 'datastore' or something for each second. 
+
+So at .25 there is a dictionary of:
+---
+Move left = 1/10
+Move right = 1/10
+Dash left = 1/10
+Dash left-up = 1/10
+Dash up = 1/10
+Dash right-up = 1/10
+Dash right = 1/10
+Dash right-down = 1/10
+Dash down = 1/10
+Dash left-down = 1/10
+---
+
+and at .50 there is a dictionary of:
+---
+Move left = 1/10
+Move right = 1/10
+Dash left = 1/10
+Dash left-up = 1/10
+Dash up = 1/10
+Dash right-up = 1/10
+Dash right = 1/10
+Dash right-down = 1/10
+Dash down = 1/10
+Dash left-down = 1/10
+---
+
+and so on until 6. 
+
+Each dictionary can be editted so .25 can have different probabilities than .5 so the AI can 'adapt' to the rewards and punishments. 
+So your job is to make a function or whatever that can go on for 6 seconds and access the dictionary for the tick its on.
+Make sure that each value can be properly editted and that the data saves. Also make sure the data can be wiped whenever and go back to 'default' settings in case
+we fuck up with the rewards and punishments and need edits. 

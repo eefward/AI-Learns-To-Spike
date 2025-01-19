@@ -80,7 +80,7 @@ def main():
                     is_dashing = True
                     dash_timer = dash_duration
                 elif event.key == pygame.K_a:
-                    velocity_x -= movement_speed
+                    velocity_x -= movement_speed * 1.5  # Stronger left movement
                 elif event.key == pygame.K_d:
                     velocity_x += movement_speed
                 elif event.key == pygame.K_s:

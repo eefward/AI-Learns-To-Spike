@@ -31,20 +31,25 @@ def create_db(amount):
     con.close()
 
 
+
 def main(ticks, seconds):
     if seconds % ticks != 0: 
         raise Exception("Seconds has to be divisible by ticks")
+    
+    con = sqlite3.connect("moves.db")
+    cur = con.cursor()
     
     total = int(seconds/ticks)
     for i in range(1, total):
         d = cur.execute("SELECT dict FROM intervals WHERE interval = ?", (i,)).fetchone()
         if not d: raise Exception("Initialize a proper database!")
 
-
+        
         a = ast.literal_eval(d[0])
         print(a)
 
     con.commit()
+
 
 
 def wipe_db():

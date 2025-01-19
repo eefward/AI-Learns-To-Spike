@@ -1,4 +1,5 @@
 import sqlite3
+import ast
 
 con = sqlite3.connect("moves.db")
 cur = con.cursor()
@@ -16,10 +17,12 @@ tick = .25
 
 while (tick <= seconds):
     interval = tick * 4
-    exists = cur.execute("SELECT interval FROM intervals WHERE interval = ?", (interval,)).fetchone()
+    d = cur.execute("SELECT dict FROM intervals WHERE interval = ?", (interval,)).fetchone()
 
-    if (exists):
-        ...
+    if d:
+        a = ast.literal_eval(d[0])
+
+        print(a)
     else:
         a["rt"] = .125
         a["rm"] = .125

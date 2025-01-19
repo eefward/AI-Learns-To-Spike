@@ -4,39 +4,62 @@ import ast
 con = sqlite3.connect("moves.db")
 cur = con.cursor()
 
-cur.execute('''
-    CREATE TABLE IF NOT EXISTS intervals (
-        interval INT PRIMARY KEY,
-        dict TEXT NOT NULL
-    )
-''')
+def create_db(amount):
+    con = sqlite3.connect("moves.db")
+    cur = con.cursor()
 
-a = {}
-seconds = 6
-tick = .25
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS intervals (
+            interval INT PRIMARY KEY,
+            dict TEXT NOT NULL
+        )
+    ''')
 
-while (tick <= seconds):
-    interval = tick * 4
-    d = cur.execute("SELECT dict FROM intervals WHERE interval = ?", (interval,)).fetchone()
+    a = {'rt': 0.125, 
+         'rm': 0.125, 
+         'rb': 0.125, 
+         'mt': 0.125, 
+         'mb': 0.125, 
+         'lt': 0.125, 
+         'lm': 0.125, 
+         'lb': 0.125}
+    
+    for i in range(1, amount + 1):
+        cur.execute("INSERT INTO intervals (interval, dict) VALUES (?, ?)", (i, str(a)))
 
-    if d:
+    con.commit()
+    con.close()
+
+
+
+def main(ticks, seconds):
+    if seconds % ticks != 0: 
+        raise Exception("Seconds has to be divisible by ticks")
+    
+    con = sqlite3.connect("moves.db")
+    cur = con.cursor()
+    
+    total = int(seconds/ticks)
+    for i in range(1, total):
+        d = cur.execute("SELECT dict FROM intervals WHERE interval = ?", (i,)).fetchone()
+        if not d: raise Exception("Initialize a proper database!")
+
+        
         a = ast.literal_eval(d[0])
-
         print(a)
-    else:
-        a["rt"] = .125
-        a["rm"] = .125
-        a["rb"] = .125
-        a["mt"] = .125
-        a["mm"] = .125
-        a["mb"] = .125
-        a["lt"] = .125
-        a["lm"] = .125
-        a["lb"] = .125
 
-        cur.execute("INSERT INTO intervals (interval, dict) VALUES (?, ?)", (interval, str(a)))
-        a.clear()
+    con.commit()
 
-    tick += .25
 
-con.commit()
+
+def wipe_db():
+    con = sqlite3.connect("moves.db")
+    cur = con.cursor()
+
+    cur.execute("DROP TABLE intervals")
+
+    con.commit()
+    con.close()
+
+create_db(24)
+main(.25, 6)

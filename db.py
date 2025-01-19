@@ -19,7 +19,7 @@ while (tick <= seconds):
     interval = tick * 4
     d = cur.execute("SELECT dict FROM intervals WHERE interval = ?", (interval,)).fetchone()
 
-    if (d):
+    if d:
         a = ast.literal_eval(d[0])
 
         print(a)

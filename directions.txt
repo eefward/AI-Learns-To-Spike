@@ -45,7 +45,7 @@ left-down = 1/8
 
 and so on until 6. 
 
-Each dictionary can be editted so .25 can have different probabilities than .5 so the AI can 'adapt' to the rewards and punishments. 
+Each dictionary can be editted so .25 can have different probabilities than .5 so the AI can 'adapt' to the rewards and punishments.
 So your job is to make a function or whatever that can go on for 6 seconds and access the dictionary for the tick its on.
 Make sure that each value can be properly editted and that the data saves. Also make sure the data can be wiped whenever and go back to 'default' settings in case
 we fuck up with the rewards and punishments and need edits. 

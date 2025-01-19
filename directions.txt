@@ -33,6 +33,7 @@ Dash left-down = 1/10
 ---
 
 and at .50 there is a dictionary of:
+
 ---
 Move left = 1/10
 Move right = 1/10

@@ -6,6 +6,7 @@ Punish:
 2: The AI or Ball touches the net
 3: The ball goes out of the purple line
 4: Double Touch
+5: The AI goes to the other court
 
 Reward: 
 1: (primary) If the ball touches the purple line --> (secondary) The faster the ball (after touch)

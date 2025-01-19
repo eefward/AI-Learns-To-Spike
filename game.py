@@ -25,13 +25,13 @@ gravitational_force = 0.5
 friction = 0.8
 jump_force = -10
 dash_speed = 10
-angular_dash_speed = 15  # Base speed for more powerful angular dashes
+angular_dash_speed = 15
 movement_speed = 5
 push_force = 5
 ground_height = HEIGHT - 50
 on_ground = False
 
-dash_duration = 5  # Duration of the dash burst in frames
+dash_duration = 5
 dash_timer = 0
 is_dashing = False
 
@@ -45,63 +45,58 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    velocity_x -= push_force
-                elif event.key == pygame.K_RIGHT:
-                    velocity_x += push_force
-                elif event.key == pygame.K_w and on_ground:
+                if event.key == pygame.K_w and on_ground:
                     velocity_y = jump_force
-                elif event.key == pygame.K_a and not is_dashing:  # Start dash left
-                    velocity_x -= dash_speed
+                elif event.key == pygame.K_q and not is_dashing:
+                    velocity_x -= angular_dash_speed * 0.7
+                    velocity_y -= angular_dash_speed
                     is_dashing = True
                     dash_timer = dash_duration
-                elif event.key == pygame.K_q and not is_dashing:  # Start diagonal dash up-left (more powerful and angled)
-                    velocity_x -= angular_dash_speed * 0.7  # Less horizontal movement
-                    velocity_y -= angular_dash_speed  # More vertical movement
-                    is_dashing = True
-                    dash_timer = dash_duration
-                elif event.key == pygame.K_w and not is_dashing:  # Start dash up
+                elif event.key == pygame.K_w and not is_dashing:
                     velocity_y -= dash_speed
                     is_dashing = True
                     dash_timer = dash_duration
-                elif event.key == pygame.K_e and not is_dashing:  # Start diagonal dash up-right (more powerful and angled)
-                    velocity_x += angular_dash_speed * 0.7  # Less horizontal movement
-                    velocity_y -= angular_dash_speed  # More vertical movement
+                elif event.key == pygame.K_e and not is_dashing:
+                    velocity_x += angular_dash_speed * 0.7
+                    velocity_y -= angular_dash_speed
                     is_dashing = True
                     dash_timer = dash_duration
-                elif event.key == pygame.K_d and not is_dashing:  # Start dash right
+                elif event.key == pygame.K_d and not is_dashing:
                     velocity_x += dash_speed
                     is_dashing = True
                     dash_timer = dash_duration
-                elif event.key == pygame.K_c and not is_dashing:  # Start diagonal dash down-right (more powerful and angled)
-                    velocity_x += angular_dash_speed  # More horizontal movement
-                    velocity_y += angular_dash_speed * 0.7  # Less vertical movement
+                elif event.key == pygame.K_c and not is_dashing:
+                    velocity_x += angular_dash_speed
+                    velocity_y += angular_dash_speed * 0.7
                     is_dashing = True
                     dash_timer = dash_duration
-                elif event.key == pygame.K_x and not is_dashing:  # Start dash down
+                elif event.key == pygame.K_x and not is_dashing:
                     velocity_y += dash_speed
                     is_dashing = True
                     dash_timer = dash_duration
-                elif event.key == pygame.K_z and not is_dashing:  # Start diagonal dash down-left (more powerful and angled)
-                    velocity_x -= angular_dash_speed  # More horizontal movement
-                    velocity_y += angular_dash_speed * 0.7  # Less vertical movement
+                elif event.key == pygame.K_z and not is_dashing:
+                    velocity_x -= angular_dash_speed
+                    velocity_y += angular_dash_speed * 0.7
                     is_dashing = True
                     dash_timer = dash_duration
+                elif event.key == pygame.K_a:
+                    velocity_x -= movement_speed
+                elif event.key == pygame.K_d:
+                    velocity_x += movement_speed
+                elif event.key == pygame.K_s:
+                    velocity_y += movement_speed
 
-        # Dash effect (burst)
         if is_dashing:
             dash_timer -= 1
-            if dash_timer <= 0:  # Dash effect ends, normalize velocity
+            if dash_timer <= 0:
                 is_dashing = False
 
-        # Apply gravity and friction
         velocity_y += gravitational_force
         velocity_x *= friction
 
         block_x += velocity_x
         block_y += velocity_y
 
-        # Collision with the ground
         if block_y + block_size > ground_height:
             block_y = ground_height - block_size
             velocity_y = 0
@@ -109,7 +104,6 @@ def main():
         else:
             on_ground = False
 
-        # Prevent the block from going off the screen
         if block_x < 0:
             block_x = 0
             velocity_x = 0
@@ -117,19 +111,11 @@ def main():
             block_x = WIDTH - block_size
             velocity_x = 0
 
-        # Clear the screen
         screen.fill(WHITE)
-
-        # Draw the ground
         pygame.draw.rect(screen, BLACK, (0, ground_height, WIDTH, HEIGHT - ground_height))
-
-        # Draw the block
         pygame.draw.rect(screen, block_color, (block_x, block_y, block_size, block_size))
 
-        # Update the display
         pygame.display.flip()
-
-        # Cap the frame rate
         clock.tick(60)
 
     pygame.quit()

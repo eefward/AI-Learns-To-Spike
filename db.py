@@ -4,7 +4,7 @@ import ast
 con = sqlite3.connect("moves.db")
 cur = con.cursor()
 
-def create_db(amount):
+def create_db(amount: int):
     con = sqlite3.connect("moves.db")
     cur = con.cursor()
 
@@ -15,16 +15,17 @@ def create_db(amount):
         )
     ''')
 
-    a = {'rt': 0.125, 
-         'rm': 0.125, 
-         'rb': 0.125, 
-         'mt': 0.125, 
-         'mb': 0.125, 
-         'lt': 0.125, 
-         'lm': 0.125, 
-         'lb': 0.125}
+    a = {'rt': 5,
+         'rm': 5, 
+         'rb': 5, 
+         'mt': 5, 
+         'mb': 5, 
+         'lt': 5, 
+         'lm': 5, 
+         'lb': 5}
     
-    for i in range(1, amount + 1):
+    # Initialize the database at every interval
+    for i in range(1, amount + 1): 
         cur.execute("INSERT INTO intervals (interval, dict) VALUES (?, ?)", (i, str(a)))
 
     con.commit()
@@ -32,7 +33,18 @@ def create_db(amount):
 
 
 
-def main(ticks, seconds):
+def get_db() -> dict:
+    con = sqlite3.connect("moves.db")
+    cur = con.cursor()
+
+    dict = cur.execute("SELECT dict FROM intervals").fetchone()
+    if not dict: raise Exception("Nothing in database")
+
+    return ast.literal_eval(dict[0])
+
+
+
+def main(ticks: float, seconds: float, judgement: list) -> None:
     if seconds % ticks != 0: 
         raise Exception("Seconds has to be divisible by ticks")
     
@@ -41,12 +53,17 @@ def main(ticks, seconds):
     
     total = int(seconds/ticks)
     for i in range(1, total):
+        # Get the dictionary in the ith row of the database
         d = cur.execute("SELECT dict FROM intervals WHERE interval = ?", (i,)).fetchone()
         if not d: raise Exception("Initialize a proper database!")
 
-        
         a = ast.literal_eval(d[0])
-        print(a)
+        if judgement[i][0] == 'good' and a[judgement[i][1]] < 10:
+            a[judgement[i][1]] += 1
+        elif judgement[i][0] == 'bad' and a[judgement[i][1]] > 1:
+            a[judgement[i][1]] -= 1
+        
+        cur.execute("UPDATE intervals SET dict = ? WHERE interval = ?", (str(a), i))
 
     con.commit()
 
@@ -61,5 +78,3 @@ def wipe_db():
     con.commit()
     con.close()
 
-create_db(24)
-main(.25, 6)

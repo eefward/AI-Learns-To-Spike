@@ -4,47 +4,43 @@ That means there is only 24 possible moves that the AI can make.
 ----------------
 Each tick (.25s) 
 
-Move left = 1/10
-Move right = 1/10
-Dash left = 1/10
-Dash left-up = 1/10
-Dash up = 1/10
-Dash right-up = 1/10
-Dash right = 1/10
-Dash right-down = 1/10
-Dash down = 1/10
-Dash left-down = 1/10
+left = 1/8
+left-up = 1/8
+up = 1/8
+right-up = 1/8
+right = 1/8
+right-down = 1/8
+down = 1/8
+left-down = 1/8
 -----------------
 
 In the SQL Database, make it so that there is a 'datastore' or something for each second. 
 
 So at .25 there is a dictionary of:
 ---
-Move left = 1/10
-Move right = 1/10
-Dash left = 1/10
-Dash left-up = 1/10
-Dash up = 1/10
-Dash right-up = 1/10
-Dash right = 1/10
-Dash right-down = 1/10
-Dash down = 1/10
-Dash left-down = 1/10
+left = 1/8
+right = 1/8
+left = 1/8
+left-up = 1/8
+up = 1/8
+right-up = 1/8
+right = 1/8
+right-down = 1/8
+down = 1/8
+left-down = 1/8
 ---
 
 and at .50 there is a dictionary of:
 
 ---
-Move left = 1/10
-Move right = 1/10
-Dash left = 1/10
-Dash left-up = 1/10
-Dash up = 1/10
-Dash right-up = 1/10
-Dash right = 1/10
-Dash right-down = 1/10
-Dash down = 1/10
-Dash left-down = 1/10
+left = 1/8
+left-up = 1/8
+up = 1/8
+right-up = 1/8
+right = 1/8
+right-down = 1/8
+down = 1/8
+left-down = 1/8
 ---
 
 and so on until 6. 
@@ -54,41 +50,37 @@ So your job is to make a function or whatever that can go on for 6 seconds and a
 Make sure that each value can be properly editted and that the data saves. Also make sure the data can be wiped whenever and go back to 'default' settings in case
 we fuck up with the rewards and punishments and need edits. 
 
+(MIN PROBABILITY = .1/8)
+
 PS Reminder
--- Lets say the AI realizes that moving right actually does bad to it, so lower the probability of it moving right by .5 and respectively change everything else.
-Move left = 1/10
-Move right = 1/10
-Dash left = 1/10
-Dash left-up = 1/10
-Dash up = 1/10
-Dash right-up = 1/10
-Dash right = 1/10
-Dash right-down = 1/10
-Dash down = 1/10
-Dash left-down = 1/10
+-- Lets say the AI realizes that moving right actually does bad to it, so lower the probability of it moving right by .1 and respectively change everything else.
+left = 1/8
+left-up = 1/8
+up = 1/8
+right-up = 1/8
+right = 1/8
+right-down = 1/8
+down = 1/8
+left-down = 1/8
 
 turns into
 
-Move left = 1/9.5
-Move right = .5/9.5
-Dash left = 1/9.5
-Dash left-up = 1/9.5
-Dash up = 1/10
-Dash right-up = 1/9.5
-Dash right = 1/9.5
-Dash right-down = 1/9.5
-Dash down = 1/9.5
-Dash left-down = 1/9.5
+left = 1/7.9
+left-up = 1/7.9
+up = 1/7.9
+right-up = 1/7.9
+right = 0.9/7.9
+right-down = 1/7.9
+down = 1/7.9
+left-down = 1/7.9
 
 -- Lets say the AI now realizes that moving left actually does good to it, so increase the probability of it moving left by .5 and respectively change everything else.
 
-Move left = 1.5/10
-Move right = .5/10
-Dash left = 1/10
-Dash left-up = 1/10
-Dash up = 1/10
-Dash right-up = 1/10
-Dash right = 1/10
-Dash right-down = 1/10
-Dash down = 1/10
-Dash left-down = 1/10
+left = 1.1/8
+left-up = 1/8
+up = 1/8
+right-up = 1/8
+right = 0.9/8
+right-down = 1/8
+down = 1/8
+left-down = 1/8

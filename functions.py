@@ -54,7 +54,7 @@ class DB:
         return ast.literal_eval(dict[0])
     
 
-    def learn(self, action: list):
+    def learn(self, action: list) -> None:
         for i in range(self.length):
             probability = self.get_db(i)
 
@@ -66,22 +66,18 @@ class DB:
                 probability[move] -= 1
                 self._points -= 1
             
-            self.cur.execute("UPDATE intervals SET dict = ? WHERE interval = ?", (str(a), i))
+            self.cur.execute("UPDATE intervals SET dict = ? WHERE interval = ?", (str(probability), i + 1))
         
         self.con.commit()
     
 
-    def points(self) -> int:
-        return self._points
-    
-
-    def random_move(self, i: int):
+    def random_move(self, i: int) -> str:
         probability = self.get_db(i)
 
         while True:
             for move in probability:
-                rand = random.randint(1, self._points)
-                if probability[move] <= rand:
+                rand = random.randint(1, self._points) # Random number from 1 to total points
+                if probability[move] >= rand: # Idk if this is too effective
                     return move
 
 

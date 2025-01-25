@@ -17,7 +17,7 @@ class DB:
         self.seconds = seconds
         self.length = int(seconds / tick)
         self._points = 0
-    
+
 
     def create_db(self) -> None:
         self.cur.execute('''

@@ -14,7 +14,7 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Block Physics Game")
+pygame.display.set_caption("AI Spike")
 
 clock = pygame.time.Clock()
 

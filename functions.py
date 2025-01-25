@@ -58,13 +58,22 @@ class DB:
         for i in range(self.length):
             probability = self.get_db(i)
 
-            judgement, move = action[i]
-            if judgement == 'good' and probability[move] < 10:
-                probability[move] += 1
-                self._points += 1
-            elif judgement == 'bad' and probability[move] > 1:
-                probability[move] -= 1
-                self._points -= 1
+            judgement, move, points = action[i]
+            chance = probability[move]
+            if judgement == 'good' and chance < 10:
+                if chance + points > 10:
+                    self._points += 10 - chance
+                    probability[move] = 10
+                else: 
+                    probability[move] += points
+                    self._points += points
+            elif judgement == 'bad' and chance > 1:
+                if chance - points < 1:
+                    self._points -= chance - 1
+                    probability[move] = 1
+                else:
+                    probability[move] -= points
+                    self._points -= points
             
             self.cur.execute("UPDATE intervals SET dict = ? WHERE interval = ?", (str(probability), i + 1))
         

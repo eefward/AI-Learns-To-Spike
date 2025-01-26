@@ -26,22 +26,23 @@ class DB:
                 dict TEXT NOT NULL
             )
         ''')
-
-        moves = str({
-            'rt': starting,
-            'rm': starting, 
-            'rb': starting, 
-            'mt': starting, 
-            'mb': starting, 
-            'lt': starting, 
-            'lm': starting, 
-            'lb': starting
-        })
-
-        for i in range(1, self.length + 1): 
-            self.cur.execute("INSERT INTO intervals (interval, dict) VALUES (?, ?)", (i, moves))
-        
-        self.con.commit()
+        anything = self.cur.execute("SELECT * FROM intervals").fetchall()
+        if not anything:
+            moves = str({
+                'rt': starting,
+                'rm': starting, 
+                'rb': starting, 
+                'mt': starting, 
+                'mb': starting, 
+                'lt': starting, 
+                'lm': starting, 
+                'lb': starting
+            })
+    
+            for i in range(1, self.length + 1): 
+                self.cur.execute("INSERT INTO intervals (interval, dict) VALUES (?, ?)", (i, moves))
+            
+            self.con.commit()
 
 
     def get_db(self, i: int) -> dict:

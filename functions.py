@@ -44,6 +44,11 @@ class DB:
         
         self.con.commit()
 
+    
+    def delete_db(self) -> None:
+        self.cur.execute("DROP TABLE intervals")
+        self.con.commit()
+
 
     def get_db(self, i: int) -> dict:
         d = self.cur.execute("SELECT dict FROM intervals WHERE interval = ?", (i,)).fetchone()
@@ -88,6 +93,18 @@ class DB:
                 if probability[move] >= rand: # Idk if this is too effective
                     return move
 
+'''
 db = DB(.1, 10, 5, .25, 10)
 for i in range(1, 41):
     print(db.random_move(i))
+
+db.delete_db()
+
+print("\n\n\nnext line", end="\n\n\n")
+
+test = DB(.1, 10, 5, .25, 10)
+for i in range(1, 41):
+    print(db.random_move(i))
+
+db.delete_db()
+'''

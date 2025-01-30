@@ -35,7 +35,8 @@ class DB:
             'mb': starting, 
             'lt': starting, 
             'lm': starting, 
-            'lb': starting
+            'lb': starting,
+            ' ': starting
         })
 
         for i in range(1, self.length + 1): 
@@ -86,3 +87,7 @@ class DB:
                 rand = random.randint(1, self.points) # Random number from 1 to total points
                 if probability[move] >= rand: # Idk if this is too effective
                     return move
+
+db = DB(.1, 10, 5, .25, 10)
+for i in range(1, 41):
+    print(db.random_move(i))

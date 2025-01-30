@@ -77,15 +77,15 @@ def draw_start_screen():
     ai_button = pygame.draw.rect(screen, GREEN, (3 * WIDTH // 4 - 100, HEIGHT // 2 - 50, 200, 100))
     text_player = font.render("Player", True, BLACK)
     text_ai = font.render("AI", True, BLACK)
-    screen.blit(text_player, (WIDTH // 4 - 50, HEIGHT // 2 - 25))
-    screen.blit(text_ai, (3 * WIDTH // 4 - 50, HEIGHT // 2 - 25))
+    screen.blit(text_player, (WIDTH // 4 - 78, HEIGHT // 2 - 25))
+    screen.blit(text_ai, (3 * WIDTH // 4 - 30, HEIGHT // 2 - 25))
     pygame.display.flip()
     return player_button, ai_button
 
 
 def ai_simulate_movement():
     """Simulate movement for AI by selecting random keys."""
-    keys = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_q, pygame.K_e, pygame.K_z, pygame.K_x, pygame.K_c]
+    keys = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_q, pygame.K_e, pygame.K_z, pygame.K_x, pygame.K_c, pygame.K_0]
     return random.choice(keys)
 
 

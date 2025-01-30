@@ -4,77 +4,78 @@ import random
 
 
 class DB:
-    def __init__(self, lowerbound: float, upperbound: float, starting: float, tick: float, seconds: float) -> None:
-        # Handle cases that don't make sense
-        if seconds % tick != 0:
-            raise Exception("Seconds has to be divisible by ticks")
-        elif tick < 0 and seconds < tick:
-            raise Exception("Invalid ticks/seconds")
-        elif lowerbound < 0 and upperbound < lowerbound and not (lowerbound < starting < upperbound):
-            raise Exception("Invalid bounds")
-        
-        # Initialize variables
-        self.con = sqlite3.connect(f"moves.db")
+    def __init__(self, tick: float, seconds: float) -> None:
+        self.con = sqlite3.connect("moves.db")
         self.cur = self.con.cursor()
-        self.length = int(seconds // tick)
-        self.points = starting * 8
 
-        # Initialize database
+        if (seconds % tick != 0):
+            raise Exception("Seconds has to be divisible by ticks")
+        elif (tick < 0 or seconds < 0):
+            raise Exception("Cannot be negative")
+        
+        self.tick = tick
+        self.seconds = seconds
+        self.length = int(seconds / tick)
+        self._points = 0
+
+
+    def create_db(self) -> None:
         self.cur.execute('''
             CREATE TABLE IF NOT EXISTS intervals (
                 interval INT PRIMARY KEY,
                 dict TEXT NOT NULL
             )
         ''')
-        anything = self.cur.execute("SELECT * FROM intervals").fetchall()
-        if not anything:
-            moves = str({
-                'rt': starting,
-                'rm': starting, 
-                'rb': starting, 
-                'mt': starting, 
-                'mb': starting, 
-                'lt': starting, 
-                'lm': starting, 
-                'lb': starting
-            })
-    
-            for i in range(1, self.length + 1): 
-                self.cur.execute("INSERT INTO intervals (interval, dict) VALUES (?, ?)", (i, moves))
-            
-            self.con.commit()
+
+        self._points = 40
+        moves = str({
+            'rt': 5,
+            'rm': 5, 
+            'rb': 5, 
+            'mt': 5, 
+            'mb': 5, 
+            'lt': 5, 
+            'lm': 5, 
+            'lb': 5
+        })
+
+        # Initialize the database at every interval
+        for i in range(1, self.length): 
+            self.cur.execute("INSERT INTO intervals (interval, dict) VALUES (?, ?)", (i, moves))
+        
+        self.con.commit()
 
 
     def get_db(self, i: int) -> dict:
-        d = self.cur.execute("SELECT dict FROM intervals WHERE interval = ?", (i,)).fetchone()
+        d = self.cur.execute("SELECT dict FROM intervals WHERE interval = ?", (i + 1,)).fetchone()
         if not d:
-            raise Exception(f"Nothing at interval {i}")
+            raise Exception("Nothing in database")
 
-        return ast.literal_eval(d[0])
+        return ast.literal_eval(dict[0])
     
 
     def learn(self, action: list) -> None:
-        for i in range(1, self.length + 1):
+        for i in range(self.length):
             probability = self.get_db(i)
 
             judgement, move, points = action[i]
             chance = probability[move]
             if judgement == 'good' and chance < 10:
                 if chance + points > 10:
-                    self.points += 10 - chance
+                    self._points += 10 - chance
                     probability[move] = 10
                 else: 
                     probability[move] += points
-                    self.points += points
+                    self._points += points
             elif judgement == 'bad' and chance > 1:
                 if chance - points < 1:
-                    self.points -= chance - 1
+                    self._points -= chance - 1
                     probability[move] = 1
                 else:
                     probability[move] -= points
-                    self.points -= points
+                    self._points -= points
             
-            self.cur.execute("UPDATE intervals SET dict = ? WHERE interval = ?", (str(probability), i))
+            self.cur.execute("UPDATE intervals SET dict = ? WHERE interval = ?", (str(probability), i + 1))
         
         self.con.commit()
     
@@ -84,6 +85,6 @@ class DB:
 
         while True:
             for move in probability:
-                rand = random.randint(1, self.points) # Random number from 1 to total points
+                rand = random.randint(1, self._points) # Random number from 1 to total points
                 if probability[move] >= rand: # Idk if this is too effective
                     return move

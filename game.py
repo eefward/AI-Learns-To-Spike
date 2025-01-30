@@ -134,10 +134,8 @@ def main():
                 game_mode = "start"
                 continue
 
-            keys = pygame.key.get_pressed() if game_mode == "player" else None
             if game_mode == "ai":
                 ai_key = ai_simulate_movement()
-                keys = pygame.key.get_pressed()
                 pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=ai_key))
 
             for event in pygame.event.get():

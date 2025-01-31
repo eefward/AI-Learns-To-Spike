@@ -4,20 +4,22 @@ import random
 
 
 class DB:
-    def __init__(self, lowerbound: float, upperbound: float, starting: float, tick: float, seconds: float) -> None:
+    def __init__(self, min_probability_limit: float, max_probability_limit: float, base: float, tick: float, seconds: float) -> None:
         # Handle cases that don't make sense
         if seconds % tick != 0:
             raise Exception("Seconds has to be divisible by ticks")
         elif tick < 0 and seconds < tick:
             raise Exception("Invalid ticks/seconds")
-        elif lowerbound < 0 and upperbound < lowerbound and not (lowerbound < starting < upperbound):
+        elif min_probability_limit < 0 and max_probability_limit < min_probability_limit and not (min_probability_limit < base < max_probability_limit):
             raise Exception("Invalid bounds")
         
         # Initialize variables
         self.con = sqlite3.connect(f"moves.db")
         self.cur = self.con.cursor()
         self.length = int(seconds // tick)
-        self.points = starting * 8
+        self.lowerbound = min_probability_limit
+        self.upperbound = max_probability_limit
+        self.points = base * 8
 
         # Initialize database
         self.cur.execute('''
@@ -28,15 +30,15 @@ class DB:
         ''')
 
         moves = str({
-            'rt': starting,
-            'rm': starting, 
-            'rb': starting, 
-            'mt': starting, 
-            'mb': starting, 
-            'lt': starting, 
-            'lm': starting, 
-            'lb': starting,
-            ' ': starting
+            'rt': base,
+            'rm': base, 
+            'rb': base, 
+            'mt': base, 
+            'mb': base, 
+            'lt': base, 
+            'lm': base, 
+            'lb': base,
+            ' ': base
         })
 
         for i in range(1, self.length + 1): 
@@ -64,17 +66,17 @@ class DB:
 
             judgement, move, points = action[i]
             chance = probability[move]
-            if judgement == 'good' and chance < 10:
-                if chance + points > 10:
-                    self.points += 10 - chance
-                    probability[move] = 10
+            if judgement == 'good' and chance < self.upperbound:
+                if chance + points > self.upperbound:
+                    self.points += self.upperbound - chance
+                    probability[move] = self.upperbound
                 else: 
                     probability[move] += points
                     self.points += points
-            elif judgement == 'bad' and chance > 1:
-                if chance - points < 1:
-                    self.points -= chance - 1
-                    probability[move] = 1
+            elif judgement == 'bad' and chance > self.lowerbound:
+                if chance - points < self.lowerbound:
+                    self.points -= chance - self.lowerbound
+                    probability[move] = self.lowerbound
                 else:
                     probability[move] -= points
                     self.points -= points

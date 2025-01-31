@@ -1,4 +1,5 @@
 import pygame
+from pygame.color import THECOLORS
 import sys
 import random
 import functions
@@ -23,9 +24,16 @@ ball_radius = 25
 
 block_color = BLUE
 ball_color = RED
+wall_color = THECOLORS['grey']
 
 block_mass = 15
 ball_mass = 5
+wall_mass = 50
+
+wall_width = 30
+wall_height = 300
+wall_x = (WIDTH - wall_width) // 2
+wall_y = HEIGHT // 2 + 200
 
 gravitational_force = 0.5
 friction = 0.8
@@ -36,8 +44,8 @@ push_force = 5
 ground_height = HEIGHT - 50
 roof_height = 50
 
-default_block_pos = (WIDTH // 2, HEIGHT // 2)
-default_ball_pos = (WIDTH // 2, HEIGHT // 4)
+default_block_pos = (WIDTH // 2 + 200, HEIGHT // 2 + 300)
+default_ball_pos = (WIDTH // 2 + 50, HEIGHT // 4 + 350)
 
 block_x, block_y = default_block_pos
 ball_x, ball_y = default_ball_pos
@@ -55,10 +63,10 @@ move_cooldown = 250
 
 max_air_speed = 10
 
-game_mode = "start"  # Modes: "start", "player", "ai"
+game_mode = "start"  # modes: "start", "player", "ai"
 game_start_time = None
 
-
+# INITIALSSSSS
 def reset_game():
     global block_x, block_y, ball_x, ball_y, velocity_x, velocity_y, ball_velocity_x, ball_velocity_y
     block_x, block_y = default_block_pos
@@ -66,7 +74,7 @@ def reset_game():
     velocity_x = 0
     velocity_y = 0
     ball_velocity_x = 0
-    ball_velocity_y = 0
+    ball_velocity_y = -20
 
 
 def draw_start_screen():
@@ -232,26 +240,65 @@ def main():
                 and block_y < ball_y + ball_radius
                 and block_y + block_size > ball_y - ball_radius
             ):
-                if ball_x < block_x:  # Left collision
+                if ball_x < block_x: 
                     ball_x = block_x - ball_radius
                     ball_velocity_x, velocity_x = resolve_collision(ball_velocity_x, velocity_x, ball_mass, block_mass)
-                elif ball_x > block_x + block_size:  # Right collision
+                elif ball_x > block_x + block_size: 
                     ball_x = block_x + block_size + ball_radius
                     ball_velocity_x, velocity_x = resolve_collision(ball_velocity_x, velocity_x, ball_mass, block_mass)
 
-                if ball_y < block_y:  # Top collision
+                if ball_y < block_y: 
                     ball_y = block_y - ball_radius
                     ball_velocity_y, velocity_y = resolve_collision(ball_velocity_y, velocity_y, ball_mass, block_mass)
-                elif ball_y > block_y + block_size:  # Bottom collision
+                elif ball_y > block_y + block_size: 
                     ball_y = block_y + block_size + ball_radius
                     ball_velocity_y, velocity_y = resolve_collision(ball_velocity_y, velocity_y, ball_mass, block_mass)
 
             screen.fill(WHITE)
 
+            if (
+                ball_x + ball_radius > wall_x
+                and ball_x - ball_radius < wall_x + wall_width
+                and ball_y + ball_radius > wall_y
+                and ball_y - ball_radius < wall_y + wall_height
+            ):
+                if ball_y < wall_y: 
+                    ball_y = wall_y - ball_radius
+                    ball_velocity_y = -ball_velocity_y * 0.8
+                elif ball_y > wall_y + wall_height: 
+                    ball_y = wall_y + wall_height + ball_radius
+                    ball_velocity_y = -ball_velocity_y * 0.8
+                elif ball_x < wall_x: 
+                    ball_x = wall_x - ball_radius
+                    ball_velocity_x = -ball_velocity_x * 0.8
+                elif ball_x > wall_x + wall_width: 
+                    ball_x = wall_x + wall_width + ball_radius
+                    ball_velocity_x = -ball_velocity_x * 0.8
+
+            if (
+                block_x + block_size > wall_x
+                and block_x < wall_x + wall_width
+                and block_y + block_size > wall_y
+                and block_y < wall_y + wall_height
+            ):
+                if block_y + block_size > wall_y and block_y < wall_y:
+                    block_y = wall_y - block_size
+                    velocity_y = 0
+                elif block_y < wall_y + wall_height and block_y + block_size > wall_y + wall_height:
+                    block_y = wall_y + wall_height
+                    velocity_y = 0
+                elif block_x + block_size > wall_x and block_x < wall_x:
+                    block_x = wall_x - block_size
+                    velocity_x = 0
+                elif block_x < wall_x + wall_width and block_x + block_size > wall_x + wall_width:
+                    block_x = wall_x + wall_width
+                    velocity_x = 0
+
+            pygame.draw.rect(screen, wall_color, (wall_x, wall_y, wall_width, wall_height))
             pygame.draw.rect(screen, BLACK, (0, ground_height, WIDTH, HEIGHT - ground_height))
             pygame.draw.rect(screen, BLACK, (0, 0, WIDTH, roof_height))
-            pygame.draw.rect(screen, BLUE, (block_x, block_y, block_size, block_size))
-            pygame.draw.circle(screen, RED, (ball_x, ball_y), ball_radius)
+            pygame.draw.rect(screen, block_color, (block_x, block_y, block_size, block_size))
+            pygame.draw.circle(screen, ball_color, (ball_x, ball_y), ball_radius)
 
             restart_button = pygame.draw.rect(screen, GREEN, (WIDTH - 150, 10, 140, 50))
             font = pygame.font.Font(None, 36)

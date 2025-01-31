@@ -59,7 +59,7 @@ on_ground = False
 ball_on_ground = False
 
 last_move_time = 0
-move_cooldown = 250
+move_cooldown = 100
 
 max_air_speed = 10
 

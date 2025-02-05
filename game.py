@@ -58,6 +58,9 @@ ball_velocity_y = 0
 on_ground = False
 ball_on_ground = False
 
+ai_last_move_time = 0  # Tracks the last move time
+ai_move_interval = 100  # AI moves every 500 milliseconds (adjust as needed)
+
 last_move_time = 0
 move_cooldown = 100
 
@@ -65,6 +68,8 @@ max_air_speed = 10
 
 game_mode = "start"  # modes: "start", "player", "ai"
 game_start_time = None
+
+ai_move_log = [] 
 
 # INITIALSSSSS
 def reset_game():
@@ -75,6 +80,8 @@ def reset_game():
     velocity_y = 0
     ball_velocity_x = 0
     ball_velocity_y = -25
+
+    ai_move_log.clear()
 
 
 def draw_start_screen():
@@ -90,12 +97,56 @@ def draw_start_screen():
     pygame.display.flip()
     return player_button, ai_button
 
-
 def ai_simulate_movement():
-    """Simulate movement for AI by selecting random keys."""
-    keys = [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_q, pygame.K_e, pygame.K_z, pygame.K_x, pygame.K_c, pygame.K_0]
-    return random.choice(keys)
+    """Simulate movement for AI by selecting random keys at controlled intervals."""
+    global ai_last_move_time, ai_move_log
 
+    current_time = pygame.time.get_ticks() 
+    if current_time - ai_last_move_time < ai_move_interval:
+        return None 
+
+    ai_last_move_time = current_time  
+
+    keys = {
+        pygame.K_a: "Left",
+        pygame.K_d: "Right",
+        pygame.K_w: "Jump",
+        pygame.K_q: "Up Left",
+        pygame.K_e: "Up Right",
+        pygame.K_z: "Down Left",
+        pygame.K_x: "Straight Down",
+        pygame.K_c: "Down Right",
+        pygame.K_0: "Idle"
+    }
+
+    selected_key = random.choice(list(keys.keys()))
+    ai_move_log.append(keys[selected_key])
+
+    if len(ai_move_log) > 10:
+        ai_move_log.pop(0)
+
+    return selected_key
+
+def draw_ai_moves():
+    """Draw the AI move history on the screen."""
+    font = pygame.font.Font(None, 28)
+    x, y = 10, 100 
+
+    box_width = 150
+    box_height = 220
+    pygame.draw.rect(screen, (200, 200, 200), (x - 5, y - 5, box_width, box_height)) 
+    pygame.draw.rect(screen, (180, 180, 180), (x + 200, y - 5, box_width, box_height)) 
+
+    for move in ai_move_log[:10]:  
+        move_text = font.render(move, True, BLACK)
+        screen.blit(move_text, (x, y))
+        y += 20  
+
+    secondary_y = 100 
+
+    for move in ai_move_log:  # Display next 5 moves in the second box
+        move_text = font.render(" Probabilities ", True, BLACK)
+        screen.blit(move_text, (x + 200, secondary_y))
 
 def resolve_collision(ball_velocity, block_velocity, ball_mass, block_mass):
     """Resolves collision between the ball and the block."""
@@ -109,7 +160,7 @@ def draw_timer(elapsed_time):
     font = pygame.font.Font(None, 48)
     time_left = max(0, 5 - int(elapsed_time))
     timer_text = font.render(f"Time Left: {time_left}s", True, GREEN)
-    screen.blit(timer_text, (WIDTH // 2 - 100, 5))
+    screen.blit(timer_text, (WIDTH // 2 - 100, 10))
 
 
 def main():
@@ -138,13 +189,21 @@ def main():
 
         else:
             elapsed_time = (pygame.time.get_ticks() - game_start_time) / 1000
+            if elapsed_time > 5 and game_mode == "ai":
+                game_mode = "ai"
+                reset_game()
+                game_start_time = pygame.time.get_ticks()
+                continue
+
             if elapsed_time > 5:
                 game_mode = "start"
                 continue
 
             if game_mode == "ai":
                 ai_key = ai_simulate_movement()
-                pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=ai_key))
+                if ai_key:  # Only post the event if a move was actually made
+                    pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=ai_key))
+
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -307,6 +366,7 @@ def main():
 
             draw_timer(elapsed_time)
 
+            draw_ai_moves()
             pygame.display.flip()
             clock.tick(60)
 

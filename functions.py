@@ -59,6 +59,12 @@ class DB:
 
         return ast.literal_eval(d[0])
     
+    def print_db(self) -> None: # NEW I NEED IT
+            self.cur.execute("SELECT * FROM intervals")
+            rows = self.cur.fetchall()
+            
+            for row in rows:
+                print(dict(row)) 
 
     def learn(self, action: list) -> None:
         for i in range(1, self.length + 1):

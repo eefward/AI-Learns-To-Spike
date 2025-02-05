@@ -6,7 +6,7 @@ import random
 class DB:
     def __init__(self, min_probability_limit: float, max_probability_limit: float, base: float, tick: float, seconds: float) -> None:
         # Handle cases that don't make sense
-        if seconds % tick != 0:
+        if (seconds * 10) % (tick * 10) != 0:  # error in this, 5 % 0.1 == 0.1, floating point innaccuracy
             raise Exception("Seconds has to be divisible by ticks")
         elif tick < 0 and seconds < tick:
             raise Exception("Invalid ticks/seconds")
@@ -30,15 +30,15 @@ class DB:
         ''')
 
         moves = str({
-            'rt': base,
-            'rm': base, 
-            'rb': base, 
-            'mt': base, 
-            'mb': base, 
-            'lt': base, 
-            'lm': base, 
-            'lb': base,
-            ' ': base
+            'rt': base, #right top
+            'rm': base, #right middle
+            'rb': base, #right bottom
+            'mt': base, #middle top
+            'mb': base, #middle bottom
+            'lt': base, #left top
+            'lm': base, #left middle
+            'lb': base, #left bottom
+            'n': base #no move
         })
 
         for i in range(1, self.length + 1): 
@@ -96,15 +96,7 @@ class DB:
                     return move
 
 '''
-db = DB(.1, 10, 5, .25, 10)
-for i in range(1, 41):
-    print(db.random_move(i))
-
-db.delete_db()
-
-print("\n\n\nnext line", end="\n\n\n")
-
-test = DB(.1, 10, 5, .25, 10)
+db = DB(.1, 10, 5.0, .1, 10)
 for i in range(1, 41):
     print(db.random_move(i))
 

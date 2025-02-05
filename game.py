@@ -74,7 +74,7 @@ def reset_game():
     velocity_x = 0
     velocity_y = 0
     ball_velocity_x = 0
-    ball_velocity_y = -20
+    ball_velocity_y = -25
 
 
 def draw_start_screen():
@@ -107,9 +107,9 @@ def resolve_collision(ball_velocity, block_velocity, ball_mass, block_mass):
 def draw_timer(elapsed_time):
     """Draws the countdown timer at the top of the screen."""
     font = pygame.font.Font(None, 48)
-    time_left = max(0, 10 - int(elapsed_time))
+    time_left = max(0, 5 - int(elapsed_time))
     timer_text = font.render(f"Time Left: {time_left}s", True, GREEN)
-    screen.blit(timer_text, (WIDTH // 2 - 100, 10))
+    screen.blit(timer_text, (WIDTH // 2 - 100, 5))
 
 
 def main():
@@ -138,7 +138,7 @@ def main():
 
         else:
             elapsed_time = (pygame.time.get_ticks() - game_start_time) / 1000
-            if elapsed_time > 10:
+            if elapsed_time > 5:
                 game_mode = "start"
                 continue
 

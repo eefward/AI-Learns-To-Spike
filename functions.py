@@ -59,12 +59,6 @@ class DB:
 
         return ast.literal_eval(d[0])
     
-    def print_db(self) -> None: # NEW I NEED IT
-            self.cur.execute("SELECT * FROM intervals")
-            rows = self.cur.fetchall()
-            
-            for row in rows:
-                print(dict(row)) 
 
     def learn(self, action: list) -> None:
         for i in range(1, self.length + 1):
@@ -92,6 +86,12 @@ class DB:
         self.con.commit()
     
 
+    def print_db(self) -> None: # NEW I NEED IT
+            data = self.cur.execute("SELECT * FROM intervals").fetchall()
+            for i in data:
+                print(i)
+
+
     def random_move(self, i: int) -> str:
         probability = self.get_db(i)
 
@@ -100,11 +100,10 @@ class DB:
                 rand = random.randint(1, self.points) # Random number from 1 to total points
                 if probability[move] >= rand: # Idk if this is too effective
                     return move
-
+                
 '''
 db = DB(.1, 10, 5.0, .1, 10)
-for i in range(1, 41):
-    print(db.random_move(i))
 
+db.print_db()
 db.delete_db()
 '''

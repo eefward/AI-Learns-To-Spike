@@ -1,2 +1,2 @@
-moves.db
+*.db
 __pycache__/

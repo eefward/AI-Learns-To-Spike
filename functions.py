@@ -19,8 +19,11 @@ class DB:
         self.length = int(seconds // tick)
         self.lowerbound = min_probability_limit
         self.upperbound = max_probability_limit
-        self.points = base * 8
+        self.base = base
+        self.points = base * 9
 
+
+    def create_db(self) -> None:
         # Initialize database
         self.cur.execute('''
             CREATE TABLE IF NOT EXISTS intervals (
@@ -30,21 +33,22 @@ class DB:
         ''')
 
         moves = str({
-            'rt': base, #right top
-            'rm': base, #right middle
-            'rb': base, #right bottom
-            'mt': base, #middle top
-            'mb': base, #middle bottom
-            'lt': base, #left top
-            'lm': base, #left middle
-            'lb': base, #left bottom
-            'n': base #no move
+            'rt': self.base, #right top
+            'rm':self. base, #right middle
+            'rb': self.base, #right bottom
+            'mt': self.base, #middle top
+            'mb': self.base, #middle bottom
+            'lt': self.base, #left top
+            'lm': self.base, #left middle
+            'lb': self.base, #left bottom
+            'n': self.base #no move
         })
 
         for i in range(1, self.length + 1): 
             self.cur.execute("INSERT INTO intervals (interval, dict) VALUES (?, ?)", (i, moves))
         
         self.con.commit()
+
 
     
     def delete_db(self) -> None:

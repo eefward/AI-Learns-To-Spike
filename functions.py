@@ -48,19 +48,19 @@ class DB:
 
     
     def delete_db(self) -> None:
-        self.cur.execute("DROP TABLE intervals")
+        self.cur.execute("DROP TABLE intervals") # Self explanatory
         self.con.commit()
 
 
-    def get_db(self, i: int) -> dict:
-        d = self.cur.execute("SELECT dict FROM intervals WHERE interval = ?", (i,)).fetchone()
+    def get_db(self, interval: int) -> dict:
+        d = self.cur.execute("SELECT dict FROM intervals WHERE interval = ?", (interval,)).fetchone()
         if not d:
             raise Exception(f"Nothing at interval {i}")
 
-        return ast.literal_eval(d[0])
+        return ast.literal_eval(d[0]) # The entire dictionary at that interval
     
 
-    def learn(self, action: list) -> None:
+    def learn(self, action: list) -> None: # ex: [('good', 'lr', .2) * self.length]
         for i in range(1, self.length + 1):
             probability = self.get_db(i)
 
@@ -86,10 +86,10 @@ class DB:
         self.con.commit()
     
 
-    def print_db(self) -> None: # NEW I NEED IT
+    def print_db(self) -> None:
             data = self.cur.execute("SELECT * FROM intervals").fetchall()
-            for i in data:
-                print(i)
+            for interval in data:
+                print(interval) # Prints the database in interval
 
 
     def random_move(self, i: int) -> str:

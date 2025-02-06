@@ -14,7 +14,7 @@ class DB:
             raise Exception("Invalid bounds")
         
         # Initialize variables
-        self.con = sqlite3.connect(f"moves.db")
+        self.con = sqlite3.connect("moves.db")
         self.cur = self.con.cursor()
         self.length = int(seconds // tick)
         self.lowerbound = min_probability_limit

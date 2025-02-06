@@ -22,8 +22,6 @@ class DB:
         self.base = base
         self.points = base * 9
 
-
-    def create_db(self) -> None:
         # Initialize database
         self.cur.execute('''
             CREATE TABLE IF NOT EXISTS intervals (
@@ -32,6 +30,8 @@ class DB:
             )
         ''')
 
+
+    def create_rows(self) -> None:
         moves = str({
             'rt': self.base, #right top
             'rm':self. base, #right middle

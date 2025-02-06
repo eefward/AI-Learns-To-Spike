@@ -55,7 +55,7 @@ class DB:
     def get_db(self, interval: int) -> dict:
         d = self.cur.execute("SELECT dict FROM intervals WHERE interval = ?", (interval,)).fetchone()
         if not d:
-            raise Exception(f"Nothing at interval {i}")
+            raise Exception(f"Nothing at interval {interval}")
 
         return ast.literal_eval(d[0]) # The entire dictionary at that interval
     

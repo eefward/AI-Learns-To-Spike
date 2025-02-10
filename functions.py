@@ -65,7 +65,7 @@ class DB:
     
 
     def learn(self, action: list) -> None: # [('lr', .2), ('n', -.71), ...]
-        for i in range(1, self.length + 1):
+        for i in range(1, len(action) + 1):
             probability = self.get_db(i)
 
             move, judgement = action[i]

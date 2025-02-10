@@ -19,7 +19,8 @@ class DB:
         self.length = int(seconds // tick)
         self.lowerbound = min_probability_limit
         self.upperbound = max_probability_limit
-        self.points = base * 8
+        self.base = base
+        self.points = base * 9
 
         # Initialize database
         self.cur.execute('''
@@ -29,22 +30,25 @@ class DB:
             )
         ''')
 
+
+    def create_rows(self) -> None:
         moves = str({
-            'rt': base, #right top
-            'rm': base, #right middle
-            'rb': base, #right bottom
-            'mt': base, #middle top
-            'mb': base, #middle bottom
-            'lt': base, #left top
-            'lm': base, #left middle
-            'lb': base, #left bottom
-            'n': base #no move
+            'rt': self.base, #right top
+            'rm':self. base, #right middle
+            'rb': self.base, #right bottom
+            'mt': self.base, #middle top
+            'mb': self.base, #middle bottom
+            'lt': self.base, #left top
+            'lm': self.base, #left middle
+            'lb': self.base, #left bottom
+            'n': self.base #no move
         })
 
         for i in range(1, self.length + 1): 
             self.cur.execute("INSERT INTO intervals (interval, dict) VALUES (?, ?)", (i, moves))
         
         self.con.commit()
+
 
     
     def delete_db(self) -> None:
@@ -55,32 +59,23 @@ class DB:
     def get_db(self, interval: int) -> dict:
         d = self.cur.execute("SELECT dict FROM intervals WHERE interval = ?", (interval,)).fetchone()
         if not d:
-            raise Exception(f"Nothing at interval {i}")
+            raise Exception(f"Nothing at interval {interval}")
 
         return ast.literal_eval(d[0]) # The entire dictionary at that interval
     
 
-    def learn(self, action: list) -> None: # ex: [('good', 'lr', .2) * self.length]
-        for i in range(1, self.length + 1):
+    def learn(self, action: list) -> None: # [('lr', .2), ('n', -.71), ...]
+        for i in range(1, len(action) + 1):
             probability = self.get_db(i)
 
-            judgement, move, points = action[i]
-            chance = probability[move]
-            if judgement == 'good' and chance < self.upperbound:
-                if chance + points > self.upperbound:
-                    self.points += self.upperbound - chance
-                    probability[move] = self.upperbound
-                else: 
-                    probability[move] += points
-                    self.points += points
-            elif judgement == 'bad' and chance > self.lowerbound:
-                if chance - points < self.lowerbound:
-                    self.points -= chance - self.lowerbound
-                    probability[move] = self.lowerbound
-                else:
-                    probability[move] -= points
-                    self.points -= points
+            move, judgement = action[i]
+            new_p = probability[move] + judgement
             
+            if new_p <= self.lowerbound: probability[move] = self.lowerbound
+            elif new_p >= self.upperbound: probability[move] = self.upperbound
+            else: probability[move] = new_p
+
+            # could be optimized by checking if it was alreay max to not waste time updating the database
             self.cur.execute("UPDATE intervals SET dict = ? WHERE interval = ?", (str(probability), i))
         
         self.con.commit()

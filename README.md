@@ -17,13 +17,13 @@ Reward:
 
 Each tick (.25s) 
 
-Move left = 5
-Move right = 5
-Dash left = 5
-Dash left-up = 5
-Dash up = 5
-Dash right-up = 5
-Dash right = 5
-Dash right-down = 5
-Dash down = 5
-Dash left-down = 5
+Move left = 5  
+Move right = 5  
+Dash left = 5  
+Dash left-up = 5  
+Dash up = 5  
+Dash right-up = 5  
+Dash right = 5  
+Dash right-down = 5  
+Dash down = 5  
+Dash left-down = 5  

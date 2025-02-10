@@ -18,6 +18,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("AI Spike")
 
 clock = pygame.time.Clock()
+timer = 5
 
 block_size = 50
 ball_radius = 25
@@ -58,8 +59,8 @@ ball_velocity_y = 0
 on_ground = False
 ball_on_ground = False
 
-ai_last_move_time = 0  # Tracks the last move time
-ai_move_interval = 100  # AI moves every 500 milliseconds (adjust as needed)
+ai_last_move_time = 0  
+ai_move_interval = 100  
 
 last_move_time = 0
 move_cooldown = 100
@@ -70,6 +71,9 @@ game_mode = "start"  # modes: "start", "player", "ai"
 game_start_time = None
 
 ai_move_log = [] 
+ai_events_log = [] 
+
+db = functions.DB(0.1, 10, 5, 0.1, 5)
 
 # INITIALSSSSS
 def reset_game():
@@ -82,6 +86,7 @@ def reset_game():
     ball_velocity_y = -25
 
     ai_move_log.clear()
+    ai_events_log.clear()
 
 
 def draw_start_screen():
@@ -128,37 +133,47 @@ def ai_simulate_movement():
     return selected_key
 
 def draw_ai_moves():
-    """Draw the AI move history on the screen."""
     font = pygame.font.Font(None, 28)
     x, y = 10, 100 
 
     box_width = 150
     box_height = 220
     pygame.draw.rect(screen, (200, 200, 200), (x - 5, y - 5, box_width, box_height)) 
-    pygame.draw.rect(screen, (180, 180, 180), (x + 200, y - 5, box_width, box_height)) 
 
     for move in ai_move_log[:10]:  
         move_text = font.render(move, True, BLACK)
         screen.blit(move_text, (x, y))
         y += 20  
+    
+def draw_ai_events():
+    """AI probability"""
+    font = pygame.font.Font(None, 28)
+    x, y = 200, 100 
 
-    secondary_y = 100 
+    box_width = 150
+    box_height = 220
+    pygame.draw.rect(screen, (180, 180, 180), (x - 5, y - 5, box_width, box_height)) 
 
-    for move in ai_move_log:  # Display next 5 moves in the second box
-        move_text = font.render(" Probabilities ", True, BLACK)
-        screen.blit(move_text, (x + 200, secondary_y))
+    for move in ai_events_log[:10]:  
+        move_text = font.render(move, True, BLACK)
+        screen.blit(move_text, (x, y))
+        y += 20  
+
+def addEvent(event):
+    ai_events_log.append(event)
+
+    if len(ai_events_log) > 10:
+        ai_events_log.pop(0)
 
 def resolve_collision(ball_velocity, block_velocity, ball_mass, block_mass):
-    """Resolves collision between the ball and the block."""
     ball_velocity_new = (ball_velocity * (ball_mass - block_mass) + 2 * block_mass * block_velocity) / (ball_mass + block_mass)
     block_velocity_new = (block_velocity * (block_mass - ball_mass) + 2 * ball_mass * ball_velocity) / (ball_mass + block_mass)
     return ball_velocity_new, block_velocity_new
 
 
 def draw_timer(elapsed_time):
-    """Draws the countdown timer at the top of the screen."""
     font = pygame.font.Font(None, 48)
-    time_left = max(0, 5 - int(elapsed_time))
+    time_left = max(0, timer - int(elapsed_time))
     timer_text = font.render(f"Time Left: {time_left}s", True, GREEN)
     screen.blit(timer_text, (WIDTH // 2 - 100, 10))
 
@@ -189,13 +204,13 @@ def main():
 
         else:
             elapsed_time = (pygame.time.get_ticks() - game_start_time) / 1000
-            if elapsed_time > 5 and game_mode == "ai":
+            if elapsed_time > timer and game_mode == "ai":
                 game_mode = "ai"
                 reset_game()
                 game_start_time = pygame.time.get_ticks()
                 continue
 
-            if elapsed_time > 5:
+            if elapsed_time > timer:
                 game_mode = "start"
                 continue
 
@@ -254,104 +269,164 @@ def main():
             if not on_ground:
                 velocity_x = max(-max_air_speed, min(velocity_x, max_air_speed))
 
+            # Touch ground
             if block_y + block_size > ground_height:
                 block_y = ground_height - block_size
                 velocity_y = 0
                 on_ground = True
+
+                if block_x < wall_x: 
+                    addEvent("wrong court")
+
+                    reset_game()
+                    elapsed_time = timer
             else:
                 on_ground = False
 
+            # Touch roof
             if block_y < roof_height:
                 block_y = roof_height
                 velocity_y = 0
 
+            # Touch left boundary of screen
             if block_x < 0:
                 block_x = 0
                 velocity_x = 0
+
+            # Touch right boundary of screen
             if block_x + block_size > WIDTH:
                 block_x = WIDTH - block_size
                 velocity_x = 0
 
+            # Update ball position
             ball_x += ball_velocity_x
             ball_y += ball_velocity_y
 
+            # Ball touches ground
             if ball_y + ball_radius > ground_height:
                 ball_y = ground_height - ball_radius
-                ball_velocity_y = -ball_velocity_y * 0.8
+                ball_velocity_y = -ball_velocity_y * 0.8  
                 ball_on_ground = True
+
+                if ball_x < wall_x: 
+                    addEvent("spike")
+
+                if ai_events_log.count("ball ground") != 0 and ai_events_log.count("spike") == 0:
+                    reset_game()
+                    game_start_time = pygame.time.get_ticks()
+                else:
+                    addEvent("ball ground")
             else:
                 ball_on_ground = False
 
+            # Ball touches roof
             if ball_y - ball_radius < roof_height:
                 ball_y = roof_height + ball_radius
-                ball_velocity_y = -ball_velocity_y * 0.8
+                ball_velocity_y = -ball_velocity_y * 0.8 
 
+            # Ball touches left boundary
             if ball_x - ball_radius < 0:
                 ball_x = ball_radius
-                ball_velocity_x = -ball_velocity_x
+                ball_velocity_x = -ball_velocity_x  
+                
+                if ai_events_log.count("spike") == 0:
+                    addEvent("out")
+                    reset_game()
+                    game_start_time = pygame.time.get_ticks()
+                else:
+                    addEvent("legal out")
+
+            # Ball touches right boundary
             if ball_x + ball_radius > WIDTH:
                 ball_x = WIDTH - ball_radius
-                ball_velocity_x = -ball_velocity_x
+                ball_velocity_x = -ball_velocity_x 
 
-            if (
-                block_x < ball_x + ball_radius
-                and block_x + block_size > ball_x - ball_radius
-                and block_y < ball_y + ball_radius
-                and block_y + block_size > ball_y - ball_radius
-            ):
-                if ball_x < block_x: 
+            # Ball collides with block
+            if (block_x < ball_x + ball_radius and block_x + block_size > ball_x - ball_radius and block_y < ball_y + ball_radius and block_y + block_size > ball_y - ball_radius):
+                # Ball hits block from left side
+                if ball_x < block_x:  
                     ball_x = block_x - ball_radius
                     ball_velocity_x, velocity_x = resolve_collision(ball_velocity_x, velocity_x, ball_mass, block_mass)
-                elif ball_x > block_x + block_size: 
+                
+                # Ball hits block from right side
+                elif ball_x > block_x + block_size:  
                     ball_x = block_x + block_size + ball_radius
                     ball_velocity_x, velocity_x = resolve_collision(ball_velocity_x, velocity_x, ball_mass, block_mass)
 
-                if ball_y < block_y: 
+                # Ball hits block from top
+                if ball_y < block_y:  
                     ball_y = block_y - ball_radius
                     ball_velocity_y, velocity_y = resolve_collision(ball_velocity_y, velocity_y, ball_mass, block_mass)
-                elif ball_y > block_y + block_size: 
+                
+                # Ball hits block from bottom
+                elif ball_y > block_y + block_size:  
                     ball_y = block_y + block_size + ball_radius
                     ball_velocity_y, velocity_y = resolve_collision(ball_velocity_y, velocity_y, ball_mass, block_mass)
+                
+                if ai_events_log.count("block ball") != 0:
+                    reset_game()
+                    game_start_time = pygame.time.get_ticks()
+                else:
+                    addEvent("block ball")
 
             screen.fill(WHITE)
 
+            # Ball collides with wall
             if (
                 ball_x + ball_radius > wall_x
                 and ball_x - ball_radius < wall_x + wall_width
                 and ball_y + ball_radius > wall_y
                 and ball_y - ball_radius < wall_y + wall_height
             ):
-                if ball_y < wall_y: 
+                # Ball hits wall from top
+                if ball_y < wall_y:  
                     ball_y = wall_y - ball_radius
-                    ball_velocity_y = -ball_velocity_y * 0.8
-                elif ball_y > wall_y + wall_height: 
-                    ball_y = wall_y + wall_height + ball_radius
-                    ball_velocity_y = -ball_velocity_y * 0.8
-                elif ball_x < wall_x: 
-                    ball_x = wall_x - ball_radius
-                    ball_velocity_x = -ball_velocity_x * 0.8
-                elif ball_x > wall_x + wall_width: 
-                    ball_x = wall_x + wall_width + ball_radius
-                    ball_velocity_x = -ball_velocity_x * 0.8
+                    ball_velocity_y = -ball_velocity_y * 0.8   
 
+                # Ball hits wall from bottom
+                elif ball_y > wall_y + wall_height:  
+                    ball_y = wall_y + wall_height + ball_radius
+                    ball_velocity_y = -ball_velocity_y * 0.8  
+
+                # Ball hits wall from left
+                elif ball_x < wall_x:  
+                    ball_x = wall_x - ball_radius
+                    ball_velocity_x = -ball_velocity_x * 0.8  
+
+                # Ball hits wall from right
+                elif ball_x > wall_x + wall_width:  
+                    ball_x = wall_x + wall_width + ball_radius
+                    ball_velocity_x = -ball_velocity_x * 0.8  
+
+            # Block collides with wall
             if (
                 block_x + block_size > wall_x
                 and block_x < wall_x + wall_width
                 and block_y + block_size > wall_y
                 and block_y < wall_y + wall_height
             ):
+                # Block hits wall from top
                 if block_y + block_size > wall_y and block_y < wall_y:
                     block_y = wall_y - block_size
                     velocity_y = 0
+
+                # Block hits wall from bottom
                 elif block_y < wall_y + wall_height and block_y + block_size > wall_y + wall_height:
                     block_y = wall_y + wall_height
                     velocity_y = 0
+
+                # Block hits wall from left
                 elif block_x + block_size > wall_x and block_x < wall_x:
                     block_x = wall_x - block_size
                     velocity_x = 0
+
+                # Block hits wall from right
                 elif block_x < wall_x + wall_width and block_x + block_size > wall_x + wall_width:
                     block_x = wall_x + wall_width
                     velocity_x = 0
+                
+                reset_game()
+                game_start_time = pygame.time.get_ticks()
 
             pygame.draw.rect(screen, wall_color, (wall_x, wall_y, wall_width, wall_height))
             pygame.draw.rect(screen, BLACK, (0, ground_height, WIDTH, HEIGHT - ground_height))
@@ -365,8 +440,8 @@ def main():
             screen.blit(text, (WIDTH - 130, 20))
 
             draw_timer(elapsed_time)
-
             draw_ai_moves()
+            draw_ai_events()
             pygame.display.flip()
             clock.tick(60)
 

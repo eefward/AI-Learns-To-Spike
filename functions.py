@@ -64,27 +64,18 @@ class DB:
         return ast.literal_eval(d[0]) # The entire dictionary at that interval
     
 
-    def learn(self, action: list) -> None: # ex: [('good', 'lr', .2) * self.length]
+    def learn(self, action: list) -> None: # [('lr', .2), ('n', -.71), ...]
         for i in range(1, self.length + 1):
             probability = self.get_db(i)
 
-            judgement, move, points = action[i]
-            chance = probability[move]
-            if judgement == 'good' and chance < self.upperbound:
-                if chance + points > self.upperbound:
-                    self.points += self.upperbound - chance
-                    probability[move] = self.upperbound
-                else: 
-                    probability[move] += points
-                    self.points += points
-            elif judgement == 'bad' and chance > self.lowerbound:
-                if chance - points < self.lowerbound:
-                    self.points -= chance - self.lowerbound
-                    probability[move] = self.lowerbound
-                else:
-                    probability[move] -= points
-                    self.points -= points
+            move, judgement = action[i]
+            new_p = probability[move] + judgement
             
+            if new_p <= self.lowerbound: probability[move] = self.lowerbound
+            elif new_p >= self.upperbound: probability[move] = self.upperbound
+            else: probability[move] = new_p
+
+            # could be optimized by checking if it was alreay max to not waste time updating the database
             self.cur.execute("UPDATE intervals SET dict = ? WHERE interval = ?", (str(probability), i))
         
         self.con.commit()
